@@ -1,26 +1,36 @@
 ---
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
 import '../styles/global.css';
-
 const { pageTitle } = Astro.props;
 ---
 
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" type="image/svg+xml" href="/penguin.png" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{pageTitle}</title>
 	</head>
 	<body>
-		<Header />
-		<h1>{pageTitle}</h1>
+
+		<header>
+			<nav>
+				<div class="hamburger">
+					<span class="line"></span>
+					<span class="line"></span>
+					<span class="line"></span>
+				</div>
+				<div class="nav-links">
+					<a href="/">Home</a>
+					<a href="/about/">About</a>
+				</div>
+			</nav>
+		</header>
 		<slot />
-		<Footer />
-	<script>
-	import "../scripts/menu.js";
-	</script>
+<script>
+	document.querySelector('.hamburger').addEventListener('click', () => {
+		document.querySelector('.nav-links').classList.toggle('expanded');
+	});
+</script>
 	</body>
 </html>

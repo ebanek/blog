@@ -65,7 +65,6 @@ h1 {
 
 @media screen and (min-width: 636px) {
   .nav-links {
-    margin-left: 5em;
     display: block;
     position: static;
     width: auto;
@@ -82,11 +81,10 @@ h1 {
   }
 }
 
-html.dark {
-  background-color: #0d0950;
-  color: #fff;
+.row {
+  display: flex;
 }
 
-.dark .nav-links a {
-  color: #fff;
+.column {
+  flex: 50%;
 }
