@@ -1,7 +1,7 @@
 ---
 title: 'Hello World'
 description: 'First post on my blog, thank you for visiting!'
-publicationDate: 2024-09-25
+pubDate: 2024-09-25
 lastUpdateDate: 2024-09-25
 ---
 
