@@ -3,6 +3,7 @@ title: 'Hello World'
 description: 'First post on my blog, thank you for visiting!'
 pubDate: 2024-09-25
 lastUpdateDate: 2024-09-25
+tags: ["intro"]
 ---
 
 Welcome to my personal blog! I plan to post here about my entrepreneurship journey, lessons that I'm learning, and any topic that grabs my interest.

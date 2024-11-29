@@ -5,6 +5,8 @@ pubDate: 2024-11-28
 lastUpdateDate: 2024-11-28
 tags: ["weekly", "market", "data"]
 ---
+import BlogPostImage from '../../components/BlogPostImage.astro';
+import starHistoryCodingTools from '../../images/data-on-markets-star-history-coding-tools.jpeg';
 
 There are several themes that repeat often in startup literature. One of those themes is that picking a market is very important. Jason Cohen advises on picking a [large enough market](https://longform.asmartbear.com/problem/), Rob Walling says: “Market comes first, marketing second, aesthetic third, and functionality a distant fourth” and [VCs mention fast flowing waters](https://www.nfx.com/post/find-the-fast-moving-water). So, how do we actually find out which markets are large?
 
@@ -47,10 +49,12 @@ Some examples:
 - for quick overviews of biggest players: [fortune.com](https://fortune.com/ranking/global500/), [companiesmarketcap.com](https://companiesmarketcap.com),
 - for financial data: [finviz.com](https://finviz.com), [macrotrends.net](https://www.macrotrends.net).
 - govornment statistics: U.S. Bureau of Economic Analysis, Hoovers
+
 ##### Private companies
 
 For non-public companies, it might take effort to dig through the noise - for example everybody has estimates and comments on OpenAI numbers, but the proper finances are probably hidden. Depending on our needs (e.g. earning money on stocks), we might want to dig and triangulate numbers in private companies such as [here](https://www.tanayj.com/p/openai-and-anthropic-revenue-breakdown). If we just want to learn what the big markets currently are, we can take the total company evaluations (from e.g. [Crunchbase](https://crunchbase.com)) as the single datapoint on those companies.
 Other similar aggregators of data are [PitchBook](https://pitchbook.com/) and [AngelList](https://www.angellist.com/), although none of them are free sources.
+
 ##### Public companies
 
 Public companies are easies than private ones:
@@ -76,7 +80,10 @@ Number of forks or number of stars on GitHub.
 - Nvidia: +180.56% past year, $3.44T market cap, $26.9B revenue 2023 and $4.2B operating income 2023
 
 **AI agents and coding tools.**
-![Star history of GitHub repositories of open source AI coding tools.](../../images/data-on-markets-star-history-coding-tools.jpeg)
+<BlogPostImage
+  src={starHistoryCodingTools}
+  alt="GitHub star history of five different AI coding tools. Image shows around 1.5 years on the x-axis and a big rise of 100000 stars in AutoGPT that dwarfs other coding tools. Other coding tools also demonstrate sharp rises at different times, but not as much."
+/>
 
 **Email marketing**
 - Apollo.io: series D $100M at $1.6B in 2023

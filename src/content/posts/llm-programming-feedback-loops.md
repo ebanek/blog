@@ -3,6 +3,7 @@ title: 'Programming with LLMs and good feedback loops'
 description: 'I am never using online chat LLMs for programming again'
 pubDate: 2024-11-17
 lastUpdateDate: 2024-11-17
+tags: ["weekly", "ai-coding"]
 ---
 
 This is my second time trying to make an extension with the help of LLMs. This time the project was less defined and larger (roughly 20 hours of work). The help I received from the LLM was most useful during the start - it could quickly make a working skeleton of the project. But the more specific my requirements got, the less useful the LLM was. One conclusion that I repeated from my previous experiment was that the LLM has to be integrated into the coding environment.

@@ -3,6 +3,7 @@ title: 'Code generation lessons from using Claude for a tiny Firefox extension'
 description: 'I made a small Firefox extension within 1 hours using an LLM - these some ideas that came to mind about generating code'
 pubDate: 2024-11-10
 lastUpdateDate: 2024-11-10
+tags: ["weekly", "ai-coding"]
 ---
 
 I've created a tiny Firefox extension by only prompting Claude.
