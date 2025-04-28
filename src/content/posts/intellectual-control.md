@@ -80,13 +80,23 @@ If we let AI control all of our coding, some decisions will be made for us, and 
 There is a correspondence - simple and theory building - contrasted with easy and vibe coding, where one results in fast speed over longer periods, and the other in fast initial speed. Hickey says that the fastest you can go is if you go on short tracks[^hickeysimple], but that doesn't describe why the graphs look like they do, it just forms an analogy. This is because we need to invest additional effort to make sure our code can be worked on in the future, which happens less if we invest all our effort in delivering something fast. Ensuring intellectual control is one way in which we invest in the future.
 
 In the end, AI wasn't trained on matching code and reality. It doesn't know in which context some code was made. That training data doesn't exist. So it sounds like folly to rely on AI and think that the code will be automatically good - we might end slowed down, or have code that is exactly like what the other 10 companies have.
-# Practical considerations
+# Concrete development tips
 
-1. It's easier to keep intellectual control, than to regain it.
+1. Use two-way doors 
 
-During development, try to be aware of how well the code matches your understanding. Our understanding is never perfect, and the code suboptimally matches our understanding, but being aware at the moment of making a deliberate choice **and documenting it** is much easier than understanding why something was done in a specific way. One convenient way of doing this is through Architecture Decision Records[^nygardadr] which can live in the codebase where they are relevant.
+Leverage the concept of **two-way doors**[^bezosletter]. If you need to make a decision, and that decision is reversible, the best course is to just produce the code that would test out that hypothesis. Sometimes, taking action is faster than deliberating on which action would bring the best benefit[^chinaction]. If your code is written well, if you understand why code looks the way it is (for example through Architecture Decision Records), you can come back and decide differently.
 
-When you're using AI tools to speed up development, try to **limit the blast radius**. This is also why some AI tools recommend making step-by-step changes [^aidertips] - all with the goal of not falling off of your skis. If the functionality is wrapped in a well designed contract and tested well, then the possible lack of knowledge is well-contained within the boundaries of that contract. You might even have no idea how it's implemented, but know how to handle that piece of functionality. Fairbanks made a nice course on design by contract. [^fairbankscontract]
+2. Capture decisions and trade-offs in Architecture Decision Records
+
+Whenever you make trade-offs **document them**, because it will make your or another persons path to understanding easier than just reading code. Architecture Decision Records[^nygardadr] are documents which can capture these decisions. The idea is to have simply formatted text documents that live next to the code, where you often are when you make a decision. They should be tracked in version control, and can be reffered to from inside code comments.
+
+3. With more risky code and AI tools, limit the blast radius
+
+When you're using AI tools to speed up development, try to **limit the blast radius**. This is also why some AI tools recommend making step-by-step changes [^aidertips] - all with the goal of not falling off of your skis, of not losing the control you have. %%quote fairbanks%%
+
+4. Design by contract
+
+If the functionality is wrapped in a well designed contract and tested well, then the possible lack of knowledge is well-contained within the boundaries of that contract. You might even have no idea how it's implemented, but know how to handle that piece of functionality. Fairbanks made a course on design by contract[^fairbankscontract].
 
 Here is a lightly edited example from something I worked on:
 
@@ -103,34 +113,46 @@ def get_outline_from_pixels(input_pixels: List[ImagePixel]) -> List[PixelVertex]
     # implementation
 ```
 
-First, even if you don't know how this method ends up being implemented, the inputs and outputs form a contract which you can reason about. The contract tells you what you need to know to have a model of this single function.
+First, even if you don't know how this method ends up being implemented, the inputs and outputs form a contract which you can reason about. The contract tells you what you need to know to have a model of this single function. It is a leaf of the system
 
-Second, this can serve as good context for prompting an LLM, as can the ADRs mentioned above. If we think that intellectual control is something we want from a system, then creating tools that work with our model should be a goal of AI tooling, but also of our programming activities - if we don't create good artefacts that capture our model well, then we cannot put anything as context into the AI. 
+Second, this can serve as good context for prompting an LLM, as can the Architecture Decision Records. If we think that intellectual control is something we want from a system, then creating tools that work with our model of the problem should be a goal. We should center the AI tooling that we use around it as well as habitualize programming activities around it. If we don't create good artefacts that capture our model well, then we lack useful things to put as context into the AI.
 
-In the long run, be careful of having places with a large lack of intellectual control - it leads to quick creation of tech debt and a slowdown to development speed. The bigger scope of your project - in engineers working on it, people using it, computation done, the more relevant intellectual control is. If you produce a lot of code with AI where you don't know exactly what it does, treat it as carefully as it deserves, in order to not poison your whole system.
+5. Leverage the typing system and static analysis
 
-2. Be aware when intellectual control is not your biggest priority.
+We have powerful systems that can efficiently run tests, check that types are satisfied, check for index-out-of-bounds errors and so on. Leverage those to confirm your intuitions about the program.
+
+# Fuzzy development tips
+
+1. Work with partial knowledge, but don't write bad code
+
+We always have to make trade-offs in favor of getting things done, because we never know what will end up being the right decision. Not to mention that the world outside of our program changes and sometimes forces the program to change as well. Ward Cunningham,  says [^cunninghamdebt]: 
+
+> A lot of bloggers have explained the debt metaphor and confused it with the idea that you could write code poorly, with the intention of doing a good job later and thinking that that was the primary source of debt. **I'm never in favor of writing code poorly, but I am in favor of writing code to reflect your current understanding of a problem even if your understanding is partial.** (...) The ability to pay back debt, and make the debt metaphor work for your advantage, depends on you writing code that is clean enough to be able to refactor as you come to understand your problem.
+
+Writing not-bad code is usually not a big problem, because with very small amounts of effort we can get big organizational benefits that will help us later. AI might also help us in writing code that is clean enough to get back to it later.
+
+2. It's easier to create with intellectual control, than to try to get it later
+
+In the long run, be careful of having places with a large lack of intellectual control - it leads to quick creation of tech debt and a slowdown to development speed. The bigger scope of your project - in engineers working on it, people using it, computation done, the more relevant intellectual control is.
+
+Previously, it didn't make sense to consider code that you don't understand from the start, so there was more emphasis on 'not losing' intellectual control. AI coding changed that, giving us a code generator - not the one that we need, but the one we deserve. If you produce a lot of code with AI where you don't know exactly what it does, treat it as carefully as it deserves, in order to not poison your whole system. Fairbanks pragmatically suggests to focus on code on the boundaries of your system (besides other places)[^fairbanksic].
+
+3. Be aware when intellectual control is not your priority
 
 A rough heuristic could be: the effort invested into a piece of software should be proportional to the number of times it is run.
 
-Maybe you're at an early startup in the explore phase, [^cohenexplore] where the goal is to fix every misunderstanding as fast as possible, and the product (or better, the idea of the product) changes every day. Maybe you're rapidly gaining knowledge on customers. There, it probably doesn't make sense to invest time in well-designed code. It would be a form of **premature optimization**, where you're optimizing value (theory building) for a particular model of reality, but if that reality changes tomorrow, the work can be thrown away. The work of theory building in software is downstream of your model of the business.
+The main problem with intellectual control is: it takes more time. In a way, intellectual control is exactly the investment we make into long-term longevity of our program - keep our ability to change things in it. If we could just have programs that are easily malleable over a long period, nobody would care about software engineering anymore. So it is exactly the trade-off between current velocity and future velocity, and the most easily maintainable software over a long run is the one that doesn't exist.
 
-This could be exemplified by the concept of **two-way doors**. If you need to make a decision, and that decision is reversible, the best course is to just produce the code that would test out that hypothesis [^chinaction]. If your code is written well, if you understand why code looks the way it looks like (for example through ADRs), you can come back and decide differently.
+Not every company is like Google, which has a well-defined code review process and even a readability process. The incremental value of new code is low compared to a possible reputational risk, so the policies around code are enforced on everybody, even in places when they're not brining much value.
 
-Ward Cunningham says [^cunninghamdebt]: 
+Maybe you're at an early startup in the explore phase, [^cohenexplore] where the goal is to fix every misunderstanding about the customer as fast as possible, and the product concept changes every day. There, it probably doesn't make sense to invest time in well-thought-out code. It would be a form of **premature optimization**, where you're optimizing your theories for a particular model of reality, but if that reality changes tomorrow, the work can be thrown away. The work of theory building in software is downstream of the business needs. If you expect that your model will change rapidly, then it might even make sense to let AI handle the complete development - if the scope of software you want to write is small enough for your velocity to not drop.
 
-> Rushing software out of the door to get some experience was a good idea - borrowing money is a good idea. (...) but as you learn you would later go back to repay the loan (...) people have confused it with the idea of writing code poorly with the intention of getting back to it later.
+In addition, if something is not your core business software, as is often the case of an internal tool or a data result, AI is great for speeding it up. If you invested a small amount of effort in maintainability and documentation, and you see that it's used more than initially expected, you can revisit and invest more effort.
 
-Differently, if you expect that your model will change rapidly, then it might be a good trade-off to let AI handle the complete development - if the scope of software you want to write is small enough for your velocity to not drop, you might be able to forsake control in return for a temporary gain in speed (until you're crushed under the tech debt created).
-
-Not every company is like Google, where there is for example a well-defined code review process and a readability process. Everybody teaches that code will be read many more times than it will be written, so maintainability is key. Google has a different top-of-mind than a startup - the incremental value of new code is low compared to a possible reputational risk, so the policies around code are generally enforced, even in places when they're not brining much value (e.g. teams that are starting out without a very clear mandate).
-
-If something is not your core software, as is often the case of an internal tool or a data result, AI is great for speeding it up. Fire away! Later if you see that it's used more than initially expected, you can invest more effort in it.
-
-[^FairbanksIC]: [George Fairbanks: Intellectual Control](https://ieeexplore.ieee.org/document/8611447) (also [conference talk]([talk](https://www.youtube.com/watch?v=Zs5UJqgu0tY)))
-[^FairbanksPartner]: [George Fairbanks: Code Is Your Partner in Thought](https://www.computer.org/csdl/magazine/so/2020/05/09173629/1mts6mVaxDa) (also [conference talk](https://www.youtube.com/watch?v=Eczq1ZplFGE))
+[^FairbanksIC]: [George Fairbanks: Intellectual Control](https://ieeexplore.ieee.org/document/8611447) ([conference talk]([talk](https://www.youtube.com/watch?v=Zs5UJqgu0tY)), [Testing Numbs Us to Our Loss of Intellectual Control](https://ieeexplore.ieee.org/document/9068304))
+[^FairbanksPartner]: [George Fairbanks: Code Is Your Partner in Thought](https://www.computer.org/csdl/magazine/so/2020/05/09173629/1mts6mVaxDa) ([conference talk](https://www.youtube.com/watch?v=Eczq1ZplFGE))
 [^FairbanksValue]: [George Fairbanks: Building Theories is Building Value](https://www.youtube.com/watch?v=KCrmquf9nPw)
-[^FairbanksContract]: [George Fairbanks: Contract-based Design](https://www.youtube.com/playlist?list=PLRqKmfi2Jh3sd0K7bWHzgwOcee65Musgz)
+[^FairbanksContract]: [George Fairbanks: Contract-based Design](https://www.youtube.com/playlist?list=PLRqKmfi2Jh3sd0K7bWHzgwOcee65Musgz) ([overview of the course](https://www.georgefairbanks.com/york-university-contract-based-design-2021))
 [^HickeySimple]: [Rich Hickey: Simple Made Easy](https://github.com/matthiasn/talk-transcripts/blob/master/Hickey_Rich/SimpleMadeEasy.md)
 [^NaurTheory]: [Peter Naur: Programming As Theory Building](https://pages.cs.wisc.edu/~remzi/Naur.pdf)
 [^CunninghamDebt]: [Ward Cunningham: Debt Metaphor](https://www.youtube.com/watch?v=pqeJFYwnkjE)
@@ -143,3 +165,4 @@ If something is not your core software, as is often the case of an internal tool
 [^NygardAdr]: [Michael Nygard: Documenting Architecture Decisions](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions)
 [^ReimerStartups]: https://www.startupsfortherestofus.com/episodes/episode-622-making-hard-product-decisions-growth-vs-profitability-with-derrick-reimer
 [^BryanClaytonOutsourcing]: https://devjourney.info/Guests/292-BryanClayton.html
+[^BezosLetter]: [Jeff Bezos 1997 shareholder letter on Two-Way Doors (Invention Machine paragraph)](https://www.sec.gov/Archives/edgar/data/1018724/000119312516530910/d168744dex991.htm)
