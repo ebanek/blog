@@ -1,15 +1,35 @@
-# Intellectual control and theory building
-If you're trying to figure out how to think about software development in light of new LLM powered tools and IDEs, then this might be for you. I present several things I learned from George Fairbanks around software design, connect them to AI powered development and vibe-coding, and at the end show concrete tips that fall out of the theories. I heard about these ideas while I was at Google, where Fairbanks is one of the organizers of software architecture classes.
+How do we maximally leverage AI for development speed, while keeping our projects maintainable? A randomized control trial done at Google[^googlerct], showed that using a generic AI toolset made developers between 21% and 26% faster. Given that AI workflows can be very customizable, I think those measured values are the minimum of how much faster we can be.
 
-I draw lessons from my personal experience in development and the lessons I learned which are all linked. I have around 5 years of professional experience as a software engineer, and I'm a big fan of reading about software architecture. Whenever I tried to use AI to write code, I remembered the idea of Fairbanks around control, and I haven't seen anybody else make the connection until now. The ideas here are quite abstract, so things might get fuzzy. I would love to include more concrete cases, so if you want to chat about them or share them, please contact me!
+Comparing it to vibe-coding, where AI creates end-to-end projects, ~25% feels like a small speed-up. The main problem with vibe-coding is that development speed on each project quickly goes to zero. I assume that's because the program becomes tightly wound up in complexity - there is no going forward without going back and changing something already done[^primedevin]. And going back and untangling takes more time than just rewriting things from scratch. For longer and bigger projects, it seems like it's still overall faster to take those ~25%.
 
-For a piece of software, it could be a whole program or a function, we have **intellectual control** [^FairbanksIC] when we know how the program/function works. Examples of things we can do when we have intellectual control are: 
-- we can predict the outputs for a given set of inputs,
-- we can explain the code to somebody else,
-- we roughly know how much work would a specific requirement or change be.
-Since our brains are limited, we probably don't have the model of the whole codebase in our heads (complexity undermines understanding [^hickeysimple]). In different words, we have more intellectual control over some parts of the codebase, and less intellectual control over other parts.
+Are there ways to take the speed of vibe-coding, but without quickly creating an unmaintainable mess? To understand this, it would make sense to look at past work which tries to understand why development speed in projects goes down. That kind of work often includes talking about tech debt. Here, I will mainly focus on the idea of intellectual control. I learned about this idea from George Fairbanks[^fairbanksic] while I was at Google, where he is one of the organizers of classes in software architecture. Recently, when I experimented with vibe-coding, intellectual control matches exactly what I feel is missing.
 
-Here is a trivial example with two functions:
+The idea is quite abstract, so things might get fuzzy. This is also a general problem with discussing more complex AI usecases - it takes time just to get up to speed. I would love to include more concrete cases, so if you want to chat about them or share them, please contact me!
+# Intellectual control
+
+For a software project, module, program, or a function, **control** is:
+- the ability to use the program to satisfy real world or business goals,
+- the ability to change the program to accomplish new goals which it currently doesn't satisfy.
+
+**Intellectual control**[^fairbanksic] is when the control comes from the things that we have in our head - the accumulated knowledge about the project and the intuition of how the program works. If a person has intellectual control over a project they can probably:
+- predict outputs for a given set of inputs,
+- know what needs to happen if they want to fix a bug,
+- give impromptu talks about the system,
+- draw diagrams of the system which are relevant for the problem at hand,
+- roughly predict how much work would a certain change be,
+- teach others about the project.
+It is not easy to gain intellectual control over a software project - it is a kind of tacit knowledge for that specific project.
+
+Of course, there exist programs that no human could ever have intellectual control over. (I am not talking about machine learning - these are blackboxes from one standpoint, but we still have control through evaluations.) A spaghetti mess of modules and functionalities, might prove too complicated for any brain to understand[^redditlambdas]. In 1972, as if he was desperately advocating for something that probaly won't happen, Dijkstra[^dijkstramanageable] suggested restricting ourselves to **intellectually manageable programs**. To have programs over which we have intellectual control, we need to have programs that are sufficiently understandable.
+
+%% this paragraph is just...ok maybe I should talk more about abstractions %%
+Since our working memory is limited, we probably never have the model of the whole codebase in our heads. It is a continuum, not a boolean, as we have more intellectual control over some parts of the codebase, and less intellectual control over other parts. 
+%%maybe I should talk more about abstractions %%Abstraction is the main system through which we can understand bigger parts at once.
+
+One solution that Fairbanks presents[^fairbankspartner] for having manageable programs is **code as a partner for our thoughts**. Between the code and what we think, there could be a back-and-forth relationship. Similarly to how writing lets us think of ideas that we haven't even considered before, code helps us think more complicated thoughts and capture shortcuts to things we understood previously.
+## Small scale control example
+
+Here is an example of how types could help us have control:
 ```
 def make_them_laugh(people, joke):
 
@@ -22,69 +42,93 @@ In the above case, we might even infer that the return variable means some kind 
 def make_them_laugh(people: List[Person], joke: str) -> AudienceResult:
 ```
 
-This brings us to the idea of **programming as theory building**[^naurtheory]. Our code is a representation of our thoughts, it is a representation of our model of reality. As Fairbanks presents[^fairbankspartner], it is also a helper in how we think. The ```AudienceResult``` type might not bring any benefits regarding code execution or functionality, but it is beneficial to our understanding of what happens when we ```make_them_laugh```. Between the code and what we think, there is a back-and-forth relationship. Similarly to how writing lets us think of ideas that we haven't even considered before, it helps us think more complicated thoughts.
+The ```AudienceResult``` type might not bring any benefits regarding code execution or functionality, but it is beneficial to our understanding of what happens when we ```make_them_laugh``` - it is a shortcut for our brain.
 
-In his talk, Simple Made Easy [^hickeysimple], Rich Hickey echoes the same: we can change our program without fear only if we understand it.  
+ Other ways we could achieve control on a small scale could be related to naming, function structure, folder organization and decisions around libraries.
+## Large scale control example
 
-Obviously, neither is our model of reality a perfect model, and neither does code perfectly respond to what we think. The discrepancy between the code and our thoughts, Fairbanks calls **ur-tech debt**.  This tech debt occurs when the model of the world that we have in our head is different from the way that our software models the world. The world changes regardless of what we think about it, while the code stays the same if we don't invest the effort.
+Some examples of intellectual control on a larger scale include:
+- what should we do to simplify our program,
+- how can we reuse the code that already exists to implement a particular feature,
+- what kind of architecture would let us experiment quickly.
 
-Here are two examples of how the world changed and created ur-tech debt:
-- in this Startups for the Rest of Us episode, Savvycal founder Derrick Rymer talks how supporting a completely new use-case would force the software to change, around the XXmin mark  
+As an example, here is an excerpt from Architecture of Open Source Applications[^aosamatplotlib] where John Hunter and Michael Doettboom write about ```matplotlib```:
 
-Derrick Rymer talks about a moment where they could potentially change what their software models:
+> Over time, the drawing API of the output backends grew a large number of methods (...). Unfortunately, having more backend methods meant it took much longer to write a new backend, and as new features were added to the core, updating the existing backends took considerable work.
+> Since each of the backends was implemented by a single developer who was expert in a particular output file format, it sometimes took a long time for a new feature to arrive in all of the backends, causing confusion for the user about which features were available where.
+> 
+> For matplotlib version 0.98, the backends were refactored to require only the minimum necessary functionality in the backends themselves, with everything else moved into the core. The number of required methods in the backend API was reduced considerably (...)
 
-> A very small percentage of our customers use SavvyCal for a lot of internal scheduling, which theoretically is a pretty powerful way to use it. (...) So I dug into it a little bit, and asked \[the customer\] some more questions, and discovered that he was basically using \[SavvyCal functionality\] as a way to use round robin, and put time on one of their internal team members’ calendars. (...) And this was just causing all kinds of problems with our ability to stay in sync with that calendar event. I thought for a second, “We need to solve some of these problems, and maybe add a setting to allow it to be editable,” but then realized, for anyone who’s doing the traditional path of sending a link, scheduling, something with an external party, you would never want it to be fully editable by all parties.
-
-- when the Digital Markets Act arrived, people at Google, including the team I was in, had to rework their software to comply with the regulations.
-
-In the first case their understanding of the world and the requirements evolved. Their choice was whether to support the new use-case and update the software to better suit that customer segment.  
-
-In the second case the requirements changed. Google decided to support the new requirements because the alternatives (leaving EU market or paying fines) weren't good for business.
-
-We can think of the above two examples as control "in the large". Our model of the world changes, so we need to modify our model of the solution. Where the code will change and how can we reuse the facillities we already have are examples of intellectual control on a larger scale. Opposing to that would be control "in the small" - with an example being function types from the start. Other in the small control example could be around naming, function structure, folder organization, decisions around libraries and so on. 
-
+The developers noticed a problem where doing a particular job started taking more and more time. By refactoring, they made the the job of adding new backend methods faster. If they didn't have intellectual control, knowledge of how adding backends interacts with the code and how that can be simplified, they wouldn't be able to improve it.  
 # Statistical control
 
-Fairbanks contrasts intellectual control with **statistical control**. Statistical control is when we rely on tests to tell us whether something works. Tests serve as our guardrails, and ensure that we don't ship a disaster to our customers. When you have intellectual control, tests serve as a confirmation that the theory captured by code is correct. When you don't have a theory, tests only confirm that the specific inputs result in correct outputs.
+Did you ever need to change 'just one small thing' in an unfamiliar codebase? You search until you find the function implementing it, fiddle around with it and implement your change, and (if you're lucky to have tests) break several tests. Then you go into the test suite, play a bit there, and with some back and forth between the implementation and test you made your change with fully passing tests. Congratulations!
 
-As good engineers or people with zero code, we will start with both intellectual control and statistical control. Fairbanks talks about the problem when statistical control is all we have left - there is no theory that the program follows anymore.  When you only have statistical control, you can only do 'whack-a-mole' development - the ultimate form of Test Driven Development. You want to make a change, write a test wherever it fits and fix the code so the test passes. Maybe you break another test, fix that, and then rinse and repeat until you make your testing suite happy.
+But, **did you do the right thing?** Will something else break? How do you know? Fairbanks named this **statistical control**[^fairbanksic]. You rely on tests to tell you whether you did something wrong. The statistical comes from the idea that tests only confirm that the specific inputs result in specific outputs - you're statistically not shipping a disaster. The one thing that is common in bugs caught by users is that the code passed all the tests[^hickeysimple].
 
-This style of development results in tech-debt piling on. Since you don't know what is happening (i.e. don't have intellectual control), each new change has its own logic, its own narrative. Soon, there are dependencies where there shouldn't be any, and you're left with a big ball of mud. A person modifying the code afterwards (might be you!) won't be able to tell why is a certain piece is done the way it is, and will need to rediscover the logic. As the ball of mud grows, our development speed slowly but surely starts decreasing.
+When you have intellectual control, tests serve as a confirmation of your understanding of the code. They check that what you expect of the program behavior, really happens. With statistical control, you rely on tests as the source of truth.
 
-When intellectual control is lost, rebuilding the theory is costly.
+## Why isn't statistical control enough?
+
+Let's say that you make a purely test-driven change. If you are unfamiliar with the codebase, there might be another person who has intellectual control. They can review your change, and say whether it fits into the larger plan/idea of the codebase. But, what if there isn't such a person? For example, when you inherit a legacy codebase and the previous most senior engineer left.
+
+One of your options is to become the person with intellectual control. As you continue shipping, you learn how the codebase works, and become an expert.
+
+But what if the place is too big of a mess to tidy up your understanding? There is not much choice other than to continue pushing code based on tests and what you see in the code. As proof that this happens, we can rely on the popularity of the book *Working Effectively With Legacy Code* by Michael C. Feathers[^legacycode].
+
+Let's fast forward the time working on such a codebase. This good enough to pass tests style of development results in tech-debt piling on. Since you don't have an overarching view of the project (i.e. intellectual control), each new change has its own logic, its own narrative. Soon, there are dependencies where there shouldn't be any. Each new change takes much more time than it should. You're left with a big ball of mud. A person modifying the code afterwards (might be you!) won't be able to tell why is a certain piece done the way it is, and will need to rediscover the logic. As the ball of mud grows, our development speed slowly but surely starts decreasing.
+
+%%TODO: reproduce Fairbanks graph on SC+IC %%
 # AI control
 
-On the wings of a certain CEO saying that programming as a discipline will die out [^jensennobody], a lot of people have been talking about **vibe-coding**. For my purposes, I will define vibe-coding as programming using LLMs without knowing what code is being written. Let's call our ability to edit code through an LLM interface as **AI control**. By that definition, vibe-coding would be deciding to only rely on AI control for development, and forsaking intellectual control from the start. Again, to regain that intellectual control and understand what is happening inside the code, a lot of work is required.
+On the wings of a certain CEO saying that programming as a discipline will die out [^jensennobody], a lot of people have been talking about **vibe-coding**. For my purposes, I will define vibe-coding as programming using LLMs without knowing what code is being written. Let's call our ability to edit code through an LLM interface as **AI control**. Combining these, vibe-coding would be deciding to only rely on AI control for development, and forsaking intellectual control from the start.
+## Analogy between AI control and outsourcing
 
-Many people have written about why vibe-coding is not good enough for proper software development. Anecdotally from internet comments, many people mention that their development speeds slows down to a crawl at some moment, with the LLM tool not being able to modify the code anymore - the AI control being lost. This reflects my experience as well.
+In AI control we don't write the code. This is unlike the other forms of control - we never had a code generator of such high quality before.
 
-Here is a funny description by Reed Harper[^reedworkflow]:
+But, using code we didn't write is not a new situation. There are several very common ways we rely on foreign code: operating system, programming language, libraries, APIs. For highly shared code, we trust it - we know that there is someone with high intellectual control working on that code.
 
-> When I describe this process to people I say “you have to aggressively keep track of what’s going on because you can easily get ahead of yourself." (...) For some reason I say “over my skis” a lot when talking about LLMs. I don’t know why. It resonates with me. Maybe it’s because it is beautiful smooth powder skiing, and then all of a sudden you are like “WHAT THE FUCK IS GOING ON!,” and are completely lost and suddenly fall off a cliff.
+We don't really trust the code written by LLMs. That's why AI control actually feels much more like having a junior or outscource engineer. In this case, the trust in the code hasn't been vetted as with highly shared code. Basically nobody else relied on it (it's bespoke for our usecase), tested it or tried it. The quality bar for usability is much lower by default. It's an unknown piece of code that should be carefully managed, and if done correctly, it can bring benefits.
 
+I've also heard bad stories about code delivered by outsourcing agencies. Here is one from Bryan Clayton, the founder of GreenPal, talking about outsourcing on the podcast DevJourney: 
+> And and first, he doesn't know what a lawn is, like he, he has never seen grass, he doesn't, he's never heard of a lawnmower and he doesn't know what a lawn is. And I'm like, I'm like damn man, like this dude. This dude is probably a really good engineer, but he has no, he has no context to understand what it is we're trying to actually solve in the world here.[^bryanclaytonoutsourcing]
+
+There are some economic circumstances that make outsourcing not that good on average. But, Clayton above talks that even if the engineer hired was great, they were far removed from the problem being solved. Even if they did a good job, there are too many misunderstandings and issues that could happen because that engineer doesn't know the essence, the real world model, behind the problem.
+
+(N.B. The founders ended up learning to code and built the product themselves.)
+
+Joel Spolsky has a lovely essay [^spolskynih] on when you should build something in-house, vs when you can outsource the solution.
+
+One extreme considered is the 'Not invented here' syndrome. This is when the team is reluctant to use any piece of code that they haven't developed in house. Such a team probably values intellectual control very highly. But, unless this team is full of prodigies, it is not very pragmatic to build everything in house. The other extreme is outsource everything.
+
+Spolsky argues for the following heuristic: if it's a core business function, you must do it yourself. From a market competition standpoint, the things that give you an edge should be tightly controled, hence developed in-house.
+
+## Why isn't AI control enough?
+
+Here is a funny description by Reed Harper:
+
+> When I describe this process to people I say “you have to aggressively keep track of what’s going on because you can easily get ahead of yourself." (...) For some reason I say “over my skis” a lot when talking about LLMs. I don’t know why. It resonates with me. Maybe it’s because it is beautiful smooth powder skiing, and then all of a sudden you are like “WHAT THE FUCK IS GOING ON!,” and are completely lost and suddenly fall off a cliff.[^reedworkflow]
+
+In that same article, Harper shares a workflow for using LLMs in both greenfield and existing software projects. The above quote very aptly describes my experience when trying out vibe-coding. It starts out ok, but if I let go of the handles and try to generate more code than I can reasonably read, everything falls apart. A single bug causes an investigation into multiple code additions, and I often end up reverting commits to the last place where I understood what was happening. In the end, the efficiency gains are not as large as they initially seem.
+
+This is exactly how it feels to **not have intellectual control** - but the main novelty is in the time-scale. Before, it wasn't possible to have no idea about what's happening so fast.
+
+Short-term, it seems like a simple argument to make - of course you don't have intellectual control if you didn't write the code yourself. On the other hand, in large projects, the loss of control is not as obvious or expected. LLMs will get better at writing code, and since we want to reap the benefits of speed, we should think about the larger scale and how projects where humans wrote fewer lines of code look like.
+
+Many people mention that their development speeds slows down to a crawl at some moment when vibe-coding, with the LLM tool not being able to modify the code anymore. This is the moment when AI control is lost - we lost the ability to effectively modify code in any way. It's reasonable to expect that LLMs will become better at coding. But we also want to have functional workflows that take into account the mistakes that they make today.
+
+%% TODO: add 'VC money is invested to make this line longer' in below graph %%
 <figure>
   <img src="speed_graph.png" alt="A grah with X axis labeled 1 day, 1 week, 1 month, 1 year and Y axis labeled speed. First curve shows that speed in case of AI control falls off after about a week. Second curves shows speed in case of statistical control, which is initially slower that AI control, but also falls down asymptotically to zero after multiple months. Third curve shows that intellectual control has the lowest initial speed, but it goes up as time passes."/>
   <figcaption>Engineering speed in relation to how old the project is. Intellectual control is the slowest initially, but doesn't end up in a state bogged down by accumulated complexity.</figcaption>
 </figure>
 
-To understand AI control more, let's consider a fundamental difference with the two other forms of control: we don't write the code. Not writing code is not a new situation. There are several very common ways where we use code other people wrote: operating system, programming language, libraries, APIs, and finally outsourcing. With the exception of outsourcing, we usually trust and rely on programs written by others. Most code that we use is relied on by many people, and wouldn't come towards us if it wasn't tested and trustable.
+Will we ever let LLMs completely take over the software engineering tasks? If we let AI control all of our coding, some decisions will be made for us. For the decisions AI makes for us, we cannot backtrack on them - because we are not aware of what is happening we don't have a choice. Even if we assume that AI control is good enough for our use-case, for every decision an LLM makes for us, we lose some edge that we could have made by choosing slightly differently. Continuing on Spolsky conclusion on what can be outsourced, it means that you want to be able to make decisions over the **core parts of your business**. If all code is outsourced to a commodity, it would mean that coding is not business critical and doesn't bring an edge.
 
-On the other hand, outsourcing - or the eager junior metaphor - feel more similar in how we regard this foreign code. The difference is that it's bespoke for our usecase. The quality bar for usability is much lower by default. It's an external piece that should be carefully managed, and if done correctly, it can bring benefits. It is also a famous source of disagreements and bad written code.
+The bigger the part you decide to 'outsource to LLMs', to bigger the possible discrepancy of your knowledge compared to what is inside the software.  Through us adding context about the world through code, that code becomes more relevant for our usecase. To squeeze every competitive edge as much as possible, there is no shortcut but understanding. To summarize the chain: AI control leads to us not making decisions, decisions mean competitive differentiation, and for core parts of business we want to have competitive differentiation. That means that we cannot let the core parts of the business be decided through AI control - we need to have understanding, i.e. intellectual control.
+# Tools for intellectual control
 
-Here is XX the founder of GreenPal, talking about outsourcing: "And and first, he doesn't know what a lawn is, like he, he has never seen grass, he doesn't, he's never heard of a lawnmower and he doesn't know what a lawn is. And I'm like, I'm like damn man, like this dude. This dude is probably a really good engineer, but he has no, he has no context to understand what it is we're trying to actually solve in the world here." They ended up building the product themselves.
-
-Joel Spolsky has a lovely essay [^spolskynih] on when you should build something in-house, vs when you can use an external solution. One extreme considered is the 'Not invented here' syndrome where the team is reluctant to use any piece of code that they haven't developed (such a team probably values intellectual control to unhealthy degrees). Spolsky argues for the following heuristic: it's ok to outsource unless the thing outsourced is your core business proposition. From a market competition standpoint, the things that give you edge should be tightly controled, hence developed in-house. 
-
-If we let AI control all of our coding, some decisions will be made for us, and we won't have a choice in what our velocity over time trajectory looks like. Every decision that the AI makes for us, we cannot backtrack on - because we are not aware of what is happening. Even if we assume that AI control is good enough for our use-cases, for every decision AI makes for us, we lose some edge that we could have made by choosing slightly differently. Hence, you want intellectual control over business critical parts - it needs to properly reflect your learnings and your model of reality, you want to squeeze every edge possible. The bigger the part you decide to 'outsource to AI', to bigger the possible discrepancy of your knowledge compared to what is inside the software.
-
-There is a correspondence - simple and theory building - contrasted with easy and vibe coding, where one results in fast speed over longer periods, and the other in fast initial speed. Hickey says that the fastest you can go is if you go on short tracks[^hickeysimple], but that doesn't describe why the graphs look like they do, it just forms an analogy. This is because we need to invest additional effort to make sure our code can be worked on in the future, which happens less if we invest all our effort in delivering something fast. Ensuring intellectual control is one way in which we invest in the future.
-
-In the end, AI wasn't trained on matching code and reality. It doesn't know in which context some code was made. That training data doesn't exist. So it sounds like folly to rely on AI and think that the code will be automatically good - we might end slowed down, or have code that is exactly like what the other 10 companies have.
-# Concrete development tips
-
-1. Use two-way doors 
-
-Leverage the concept of **two-way doors**[^bezosletter]. If you need to make a decision, and that decision is reversible, the best course is to just produce the code that would test out that hypothesis. Sometimes, taking action is faster than deliberating on which action would bring the best benefit[^chinaction]. If your code is written well, if you understand why code looks the way it is (for example through Architecture Decision Records), you can come back and decide differently.
+%% Just read the code yourself %%
 
 2. Capture decisions and trade-offs in Architecture Decision Records
 
@@ -121,15 +165,17 @@ Second, this can serve as good context for prompting an LLM, as can the Architec
 
 We have powerful systems that can efficiently run tests, check that types are satisfied, check for index-out-of-bounds errors and so on. Leverage those to confirm your intuitions about the program.
 
-# Fuzzy development tips
+# When to care about intellectual control?
 
-1. Work with partial knowledge, but don't write bad code
+## Speed over a long time
 
-We always have to make trade-offs in favor of getting things done, because we never know what will end up being the right decision. Not to mention that the world outside of our program changes and sometimes forces the program to change as well. Ward Cunningham,  says [^cunninghamdebt]: 
+There is a correspondence - simple and theory building - contrasted with easy and vibe coding, where one results in fast speed over longer periods, and the other in fast initial speed. Hickey says that the fastest you can go is if you go on short tracks[^hickeysimple]. This means that because we need to invest additional effort to make sure our code can be worked on in the future, which happens less if we invest all our effort in delivering something fast. Ensuring intellectual control is one way in which we invest in the future.
 
-> A lot of bloggers have explained the debt metaphor and confused it with the idea that you could write code poorly, with the intention of doing a good job later and thinking that that was the primary source of debt. **I'm never in favor of writing code poorly, but I am in favor of writing code to reflect your current understanding of a problem even if your understanding is partial.** (...) The ability to pay back debt, and make the debt metaphor work for your advantage, depends on you writing code that is clean enough to be able to refactor as you come to understand your problem.
+## Other
 
-Writing not-bad code is usually not a big problem, because with very small amounts of effort we can get big organizational benefits that will help us later. AI might also help us in writing code that is clean enough to get back to it later.
+1. Use two-way doors 
+
+Leverage the concept of **two-way doors**[^bezosletter]. If you need to make a decision, and that decision is reversible, the best course is to just produce the code that would test out that hypothesis. Sometimes, taking action is faster than deliberating on which action would bring the best benefit[^chinaction]. If your code is written well, if you understand why code looks the way it is (for example through Architecture Decision Records), you can come back and decide differently.
 
 2. It's easier to create with intellectual control, than to try to get it later
 
@@ -163,6 +209,11 @@ In addition, if something is not your core business software, as is often the ca
 [^CohenExplore]: [Jason Cohen: Explore vs Execute](https://longform.asmartbear.com/explore-execute/)
 [^SpolskyNih]: [Joel Spolsky: In Defense of Not-Invented-Here Syndrome](https://www.joelonsoftware.com/2001/10/14/in-defense-of-not-invented-here-syndrome/)
 [^NygardAdr]: [Michael Nygard: Documenting Architecture Decisions](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions)
-[^ReimerStartups]: https://www.startupsfortherestofus.com/episodes/episode-622-making-hard-product-decisions-growth-vs-profitability-with-derrick-reimer
 [^BryanClaytonOutsourcing]: https://devjourney.info/Guests/292-BryanClayton.html
 [^BezosLetter]: [Jeff Bezos 1997 shareholder letter on Two-Way Doors (Invention Machine paragraph)](https://www.sec.gov/Archives/edgar/data/1018724/000119312516530910/d168744dex991.htm)
+[^GoogleRct]: [How much does AI impact development speed? An enterprise-based randomized controlled trial, Paradis et al.](https://arxiv.org/abs/2410.12944)
+[^PrimeDevin]: For a funny example, you can check: [ThePrimeTime: Real Game Dev Reviews Game By Devin.ai](https://www.youtube.com/watch?v=NW6PhVdq9R8&t=6336s)
+[^DijkstraManageable]: [Edsger W. Dijkstra: The Humble Programmer](https://www.cs.utexas.edu/~EWD/transcriptions/EWD03xx/EWD340.html)
+[^RedditLambdas]: An example from r/ExperiencedDevs: [New company's backend is all lambdas? Am I crazy or is this a weird architecture](https://www.reddit.com/r/ExperiencedDevs/comments/1dkgkga/new_companys_backend_is_all_lambdas_am_i_crazy_or/)
+[^aosamatplotlib]: [John Hunter and Michael Droettboom: matplotlib (The Architecture of Open Source Applications (Volume 2))](https://aosabook.org/en/v2/matplotlib.html)
+[^legacycode]: [Michael C. Feathers: Working Effectively with Legacy Code](https://www.goodreads.com/book/show/44919.Working_Effectively_with_Legacy_Code)
