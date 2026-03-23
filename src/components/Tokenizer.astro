@@ -1,0 +1,112 @@
+---
+import { encode, decode } from 'gpt-tokenizer/encoding/r50k_base';
+
+interface Props {
+  text: string;
+}
+const { text } = Astro.props;
+
+const COLORS = ['#fde68a', '#bbf7d0', '#bfdbfe', '#fbcfe8', '#c4b5fd', '#fed7aa'];
+const SPECIAL_COLOR = '#ef4444';
+
+const SPECIAL_TOKENS = [
+  '<|BOS|>', '<|EOS|>', '<|PAD|>',
+  '<|START_SYSTEM|>', '<|END_SYSTEM|>',
+  '<|START_USER|>', '<|END_USER|>',
+  '<|START_AI|>', '<|END_AI|>',
+  '<|START_TOOL|>', '<|END_TOOL|>',
+  '<|END_TURN|>',
+  '<|im_start|>', '<|im_end|>',
+  '<|endoftext|>', '<|begin_of_text|>', '<|end_of_text|>',
+  '<|start_header_id|>', '<|end_header_id|>',
+  '<|eot_id|>',
+  '<s>', '</s>',
+  '[INST]', '[/INST]',
+  '<<SYS>>', '<</SYS>>',
+  '[BOS]', '[EOS]',
+];
+const SPECIAL_TOKEN_RE = new RegExp(
+  SPECIAL_TOKENS.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'),
+  'g'
+);
+
+type Segment = { type: 'text'; value: string } | { type: 'special'; value: string };
+
+function splitSpecialTokens(input: string): Segment[] {
+  const segments: Segment[] = [];
+  let lastIndex = 0;
+  let match;
+  SPECIAL_TOKEN_RE.lastIndex = 0;
+  while ((match = SPECIAL_TOKEN_RE.exec(input)) !== null) {
+    if (match.index > lastIndex) {
+      segments.push({ type: 'text', value: input.slice(lastIndex, match.index) });
+    }
+    segments.push({ type: 'special', value: match[0] });
+    lastIndex = SPECIAL_TOKEN_RE.lastIndex;
+  }
+  if (lastIndex < input.length) {
+    segments.push({ type: 'text', value: input.slice(lastIndex) });
+  }
+  return segments;
+}
+
+const segments = splitSpecialTokens(text);
+
+type TokenSpan = { value: string; color: string; isSpecial: boolean };
+const spans: TokenSpan[] = [];
+let colorIndex = 0;
+let totalTokens = 0;
+
+for (const seg of segments) {
+  if (seg.type === 'special') {
+    spans.push({ value: seg.value, color: SPECIAL_COLOR, isSpecial: true });
+    totalTokens++;
+  } else {
+    const tokens = encode(seg.value);
+    totalTokens += tokens.length;
+    for (const t of tokens) {
+      const decoded = decode([t]);
+      spans.push({ value: decoded, color: COLORS[colorIndex % COLORS.length], isSpecial: false });
+      colorIndex++;
+    }
+  }
+}
+---
+<div class="tokenized-text">
+  <p class="token-count">{totalTokens} tokens</p>
+  <div class="token-display">
+    {spans.map(s => (
+      <span
+        class={s.isSpecial ? 'special-token' : undefined}
+        style={`background:${s.color}`}
+      >{s.value}</span>
+    ))}
+  </div>
+</div>
+
+<style>
+  .tokenized-text {
+    margin: 1.5rem 0;
+  }
+  .token-count {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  .token-display {
+    line-height: 1.8;
+  }
+  .token-display span {
+    display: inline;
+    padding: 2px 1px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+  }
+  .token-display .special-token {
+    color: #fff;
+    padding: 2px 5px;
+    font-weight: 600;
+  }
+</style>

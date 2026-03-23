@@ -1,0 +1,79 @@
+---
+title: 'What is a token, what is model context?'
+description: 'A quick explainer of some commonly used words in regards to LLMs.'
+pubDate: 2026-03-23
+lastUpdateDate: 2026-03-23
+tags: ["llm"]
+---
+
+import Tokenizer from '../../components/Tokenizer.astro';
+
+LLMs may seem magical, but they are computer programs underneath.
+By understanding how they work, we can understand some of their pitfalls and make our usage of them more efficient.
+My aim here is to explain the concepts of: token, model context, model context size and context rot as one of the potential pitfalls.
+I use LLM and model interchangeably in this text.
+
+## Model context
+
+Model context is everything that the model uses for generating the next piece of text.
+The main piece of context is usually the chat message that you wrote, but it also includes the uploaded documents and other information that the system automatically includes.
+
+The automatically included parts could be high-level and not specific to the brand of LLM used, like the system prompt (descriptions of how the system should behave), and low-level and specific to the brand of LLM used, such as [turn taking details](https://huggingface.co/MiniMaxAI/MiniMax-M2/blob/main/chat_template.jinja).
+
+Here's a literal example of what goes into the LLM using the above chat template for the MiniMax model:
+
+```xml
+<|BOS|><|START_SYSTEM|>
+You are MiniMax, and you are an expert scientist. Make sure to give very erudite intellectual answer to the users - you need to show that you're smart.
+<|END_TURN|>
+<|START_USER|>
+Hi! How are you?
+<|END_TURN|>
+<|START_AI|>
+Good.
+<|END_TURN|>
+<|START_USER|>
+Can you tell me when life appeared on earth?
+<|END_TURN|>
+```
+
+Notably, when you chat with an LLM, all of the messages, both yours and the LLMs, in a single chat are included in it's history.
+{/* TODO: add a footnote about compaction. */}
+A transformer architecture that underlies LLM systems is a text producing architecture.
+{/* TODO: add a footnote about - At it's core, it doesn't have the concept of "chatting" or taking turns producing text - this is achieved by additional processing */}
+What does it mean to produce text? In transformers, it means computing the most likely next token.
+
+## Tokens
+
+Tokens are combinations of characters, computed from the text on which the LLM is produced.
+Each token has a unique embedding, a representation as a vector of real numbers, and an LLM is a "next token generation engine".
+Tokens are a technical solution that proved to work the best: there are too many words in a vocabulary to capture all of them, and characters are too small as building blocks.
+The solution: variable sequences of characters, i.e. tokens.
+
+Here's an example of the tokenized text from above.
+Notice:
+* special characters which mark chat turns are single tokens,
+* common english words are single tokens, but more uncommon words are not.
+
+<Tokenizer text={`<|BOS|><|START_SYSTEM|>\nYou are MiniMax, and you are an expert scientist. Make sure to give very erudite intellectual answer to the users - you need to show that you're smart.<|END_TURN|>\n<|START_USER|>\nHi! How are you?<|END_TURN|>\n<|START_AI|>\nGood.<|END_TURN|>\n<|START_USER|>\nCan you tell me when life appeared on earth?<|END_TURN|>`} />
+
+## Context size and context rot
+
+Context size is maximum number of tokens that a model can ingest for producing text.
+It is impossible for a model to attend to more tokens than the context size.
+
+There are [simple rules of thumb](https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them) for converting between tokens and words/characters, the most important ones:
+* 1 token ~ 4 characters,
+* 1 token ~ 3/4 of a word.
+On larger pieces of english text this holds well, but if your text has many equations, is in a different language or something similar - the equation is likely different.l
+
+Flagship models advertise 1 million context size - fitting several books worthy of text.
+This is a lot of text - and even though we could fit all books inside the context, it might not be the best idea.
+
+Context rot is the phenomenon where more tokens worsen the quality of output.
+Ideally, you wouldn't give 3 full books to the LLM, but the most relevant chapter from each book.
+That's why even though it might make sense to put all the scientific papers you care about at once, choosing is still beneficial.
+LLMs will get better and better at handling larger context, but this is fundamentally hard to test and it will take solid effort to improve in this regard.
+Until then, we have other techniques such as dynamically searching for content and putting it into the context (also known as a RAG system - Retrieval Augmented Generation).
+
+{/* TODO: reference: https://huggingface.co/spaces/hesamation/primer-llm-embedding?section=what_are_embeddings? */}
